@@ -13,9 +13,21 @@ const router = createRouter({
       component: () => import('@/views/auth/LoginView.vue'),
     },
     {
-      path: '/admin/dashboard',
-      name: 'AdminDashboard',
+      path: '/admin',
       component: () => import('@/views/admin/AdminLayout.vue'),
+      redirect: '/admin/dashboard',
+      children: [
+        {
+          path: 'dashboard',
+          name: 'AdminDashboard',
+          component: () => import('@/views/admin/Dashboard.vue'),
+        },
+        {
+          path: 'merchants',
+          name: 'MerchantAudit',
+          component: () => import('@/views/admin/MerchantAudit.vue'),
+        }
+      ]
     },
     {
       path: '/merchant/dashboard',
@@ -38,17 +50,21 @@ router.beforeEach((to) => {
   const roleHome = { 0: '/admin/dashboard', 1: '/merchant/dashboard', 2: '/user/home' }
   const rolePrefix = { 0: '/admin', 1: '/merchant', 2: '/user' }
 
-  if (to.name === 'Login') {
-    if (isLoggedIn) return roleHome[userRole] || '/login'
+  if (to.path === '/login') {
+    if (isLoggedIn && roleHome[userRole]) return roleHome[userRole]
+    if (isLoggedIn && !roleHome[userRole]) {
+      localStorage.removeItem('token')
+      localStorage.removeItem('userInfo')
+    }
     return true
   }
-
   if (!isLoggedIn) return '/login'
-
-  if (userRole !== -1 && !to.path.startsWith(rolePrefix[userRole])) {
-    return roleHome[userRole]
+  if (!roleHome[userRole]) {
+    localStorage.removeItem('token')
+    localStorage.removeItem('userInfo')
+    return '/login'
   }
-
+  if (!to.path.startsWith(rolePrefix[userRole])) return roleHome[userRole]
   return true
 })
 
