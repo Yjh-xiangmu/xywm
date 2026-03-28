@@ -26,19 +26,44 @@ const router = createRouter({
           path: 'merchants',
           name: 'MerchantAudit',
           component: () => import('@/views/admin/MerchantAudit.vue'),
+        },
+      ]
+    },
+    {
+      path: '/merchant',
+      component: () => import('@/views/merchant/MerchantLayout.vue'),
+      redirect: '/merchant/dashboard',
+      children: [
+        {
+          path: 'dashboard',
+          name: 'MerchantDashboard',
+          component: () => import('@/views/merchant/Dashboard.vue'),
+        },
+        {
+          path: 'category',
+          name: 'MerchantCategory',
+          component: () => import('@/views/merchant/CategoryManage.vue'),
+        },
+        {
+          path: 'dishes',
+          name: 'MerchantDish',
+          component: () => import('@/views/merchant/DishManage.vue'),
         }
       ]
     },
     {
-      path: '/merchant/dashboard',
-      name: 'MerchantDashboard',
-      component: () => import('@/views/merchant/MerchantLayout.vue'),
-    },
-    {
-      path: '/user/home',
-      name: 'UserHome',
+      path: '/user',
       component: () => import('@/views/user/UserLayout.vue'),
-    }
+      redirect: '/user/home',
+      children: [
+        {
+          path: 'home', // 对应 /user/home
+          name: 'UserHome',
+          component: () => import('@/views/user/Home.vue'),
+        }
+        // 以后你写的购物车、订单页面也都加在这里面
+      ]
+    },
   ]
 })
 

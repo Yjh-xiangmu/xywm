@@ -28,8 +28,12 @@ public class WebMvcConfig implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(jwtInterceptor)
                 .addPathPatterns("/api/**")
-                // 放行登录、注册、文件上传接口
-                .excludePathPatterns("/api/auth/login", "/api/auth/register", "/api/file/upload");
+                // 只能放行这三个不需要 Token 的接口
+                .excludePathPatterns(
+                        "/api/auth/login",
+                        "/api/auth/register",
+                        "/api/file/upload"
+                );
     }
 
     // 配置静态资源映射，让前端能直接访问 E盘 下的图片

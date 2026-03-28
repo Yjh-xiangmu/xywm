@@ -54,7 +54,11 @@
       </header>
 
       <main class="content">
-        <Dashboard />
+        <router-view v-slot="{ Component }">
+          <transition name="fade" mode="out-in">
+            <component :is="Component" v-if="Component" />
+          </transition>
+        </router-view>
       </main>
     </div>
   </div>
@@ -65,7 +69,7 @@ import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessageBox, ElMessage } from 'element-plus'
 import { useAuthStore } from '@/stores/auth'
-import Dashboard from './Dashboard.vue'
+// 已经删除了 import Dashboard from './Dashboard.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -215,5 +219,14 @@ const handleCommand = async (cmd) => {
   flex: 1;
   padding: 24px;
   overflow-y: auto;
+}
+/* 补充一个页面切换过渡动画，让体验更顺滑 */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>

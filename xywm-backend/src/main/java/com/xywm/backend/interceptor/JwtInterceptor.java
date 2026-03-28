@@ -18,7 +18,6 @@ public class JwtInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
-        // 放行 OPTIONS 预检请求
         if ("OPTIONS".equals(request.getMethod())) {
             return true;
         }
@@ -31,9 +30,24 @@ public class JwtInterceptor implements HandlerInterceptor {
         token = token.substring(7);
         try {
             Claims claims = jwtUtils.parseToken(token);
-            // 将解析出的用户信息存入你写好的 UserContext
-            UserContext.setUserId(claims.get("userId", Long.class));
-            UserContext.setUserRole(claims.get("role", Integer.class));
+
+            Object userIdObj = claims.get("userId");
+            if (userIdObj == null) userIdObj = claims.get("id"); // 兼容获取
+
+            if (userIdObj != null) {
+                Long userId = Long.valueOf(userIdObj.toString());
+                UserContext.setUserId(userId); // 保留旧的缓存用法
+
+                // 【终极防丢手段】直接把 ID 钉在本次 Request 请求对象上！
+                request.setAttribute("currentUserId", userId);
+
+                Object roleObj = claims.get("role");
+                if (roleObj != null) {
+                    UserContext.setUserRole(Integer.valueOf(roleObj.toString()));
+                }
+            } else {
+                throw new BusinessException(401, "Token无效：无法提取用户ID");
+            }
             return true;
         } catch (Exception e) {
             throw new BusinessException(401, "登录已过期，请重新登录");
@@ -42,7 +56,6 @@ public class JwtInterceptor implements HandlerInterceptor {
 
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
-        // 请求结束清理线程数据，防止内存泄漏
         UserContext.clear();
     }
 }
