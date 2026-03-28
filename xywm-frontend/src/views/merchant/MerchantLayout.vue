@@ -54,11 +54,7 @@
       </header>
 
       <main class="content">
-        <router-view v-slot="{ Component }">
-          <transition name="slide-up" mode="out-in">
-            <component :is="Component" />
-          </transition>
-        </router-view>
+        <Dashboard />
       </main>
     </div>
   </div>
@@ -69,6 +65,7 @@ import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessageBox, ElMessage } from 'element-plus'
 import { useAuthStore } from '@/stores/auth'
+import Dashboard from './Dashboard.vue'
 
 const route = useRoute()
 const router = useRouter()

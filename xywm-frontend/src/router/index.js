@@ -5,8 +5,7 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      name: 'Root',
-      component: () => import('@/views/auth/LoginView.vue'),
+      redirect: '/login'
     },
     {
       path: '/login',
@@ -14,37 +13,19 @@ const router = createRouter({
       component: () => import('@/views/auth/LoginView.vue'),
     },
     {
-      path: '/admin',
+      path: '/admin/dashboard',
+      name: 'AdminDashboard',
       component: () => import('@/views/admin/AdminLayout.vue'),
-      children: [
-        {
-          path: 'dashboard',
-          name: 'AdminDashboard',
-          component: () => import('@/views/admin/Dashboard.vue')
-        }
-      ]
     },
     {
-      path: '/merchant',
+      path: '/merchant/dashboard',
+      name: 'MerchantDashboard',
       component: () => import('@/views/merchant/MerchantLayout.vue'),
-      children: [
-        {
-          path: 'dashboard',
-          name: 'MerchantDashboard',
-          component: () => import('@/views/merchant/Dashboard.vue')
-        }
-      ]
     },
     {
-      path: '/user',
+      path: '/user/home',
+      name: 'UserHome',
       component: () => import('@/views/user/UserLayout.vue'),
-      children: [
-        {
-          path: 'home',
-          name: 'UserHome',
-          component: () => import('@/views/user/Home.vue')
-        }
-      ]
     }
   ]
 })
@@ -57,18 +38,15 @@ router.beforeEach((to) => {
   const roleHome = { 0: '/admin/dashboard', 1: '/merchant/dashboard', 2: '/user/home' }
   const rolePrefix = { 0: '/admin', 1: '/merchant', 2: '/user' }
 
-  // 访问 / 或 /login
-  if (to.name === 'Root' || to.name === 'Login') {
-    if (isLoggedIn) return { path: roleHome[userRole] }
+  if (to.name === 'Login') {
+    if (isLoggedIn) return roleHome[userRole] || '/login'
     return true
   }
 
-  // 未登录
-  if (!isLoggedIn) return { name: 'Login' }
+  if (!isLoggedIn) return '/login'
 
-  // 角色不匹配
   if (userRole !== -1 && !to.path.startsWith(rolePrefix[userRole])) {
-    return { path: roleHome[userRole] }
+    return roleHome[userRole]
   }
 
   return true

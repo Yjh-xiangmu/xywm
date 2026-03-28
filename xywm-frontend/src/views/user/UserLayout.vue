@@ -62,11 +62,7 @@
       </header>
 
       <main class="content">
-        <router-view v-slot="{ Component }">
-          <transition name="slide-up" mode="out-in">
-            <component :is="Component" />
-          </transition>
-        </router-view>
+        <Home />
       </main>
     </div>
   </div>
@@ -77,6 +73,7 @@ import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessageBox, ElMessage } from 'element-plus'
 import { useAuthStore } from '@/stores/auth'
+import Home from './Home.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -85,11 +82,11 @@ const collapsed = ref(false)
 const cartCount = ref(0)
 
 const menuItems = [
-  { path: '/user/home',    icon: 'House',         label: '首页点餐' },
-  { path: '/user/orders',  icon: 'List',          label: '我的订单' },
-  { path: '/user/cart',    icon: 'ShoppingCart',  label: '购物车' },
-  { path: '/user/coupon',  icon: 'Ticket',        label: '我的优惠券' },
-  { path: '/user/profile', icon: 'User',          label: '个人信息' },
+  { path: '/user/home',    icon: 'House',        label: '首页点餐' },
+  { path: '/user/orders',  icon: 'List',         label: '我的订单' },
+  { path: '/user/cart',    icon: 'ShoppingCart', label: '购物车' },
+  { path: '/user/coupon',  icon: 'Ticket',       label: '我的优惠券' },
+  { path: '/user/profile', icon: 'User',         label: '个人信息' },
 ]
 
 const activeMenu = computed(() => route.path)

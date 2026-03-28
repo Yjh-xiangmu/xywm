@@ -1,8 +1,6 @@
 <template>
   <div class="layout">
-    <!-- 侧边栏 -->
     <aside class="sidebar" :class="{ collapsed }">
-      <!-- Logo -->
       <div class="sidebar-logo">
         <span class="logo-icon">🍜</span>
         <transition name="fade">
@@ -10,7 +8,6 @@
         </transition>
       </div>
 
-      <!-- 菜单 -->
       <el-menu
           :default-active="activeMenu"
           :collapse="collapsed"
@@ -18,25 +15,18 @@
           router
           class="sidebar-menu"
       >
-        <el-menu-item
-            v-for="item in menuItems"
-            :key="item.path"
-            :index="item.path"
-        >
+        <el-menu-item v-for="item in menuItems" :key="item.path" :index="item.path">
           <el-icon><component :is="item.icon" /></el-icon>
           <template #title>{{ item.label }}</template>
         </el-menu-item>
       </el-menu>
 
-      <!-- 折叠按钮 -->
       <div class="collapse-btn" @click="collapsed = !collapsed">
         <el-icon><ArrowLeft v-if="!collapsed" /><ArrowRight v-else /></el-icon>
       </div>
     </aside>
 
-    <!-- 右侧主体 -->
     <div class="main-wrapper">
-      <!-- 顶部导航 -->
       <header class="topbar">
         <div class="topbar-left">
           <span class="page-title">{{ currentTitle }}</span>
@@ -63,13 +53,8 @@
         </div>
       </header>
 
-      <!-- 内容区 -->
       <main class="content">
-        <router-view v-slot="{ Component }">
-          <transition name="slide-up" mode="out-in">
-            <component :is="Component" />
-          </transition>
-        </router-view>
+        <Dashboard />
       </main>
     </div>
   </div>
@@ -80,6 +65,7 @@ import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessageBox, ElMessage } from 'element-plus'
 import { useAuthStore } from '@/stores/auth'
+import Dashboard from './Dashboard.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -121,8 +107,6 @@ const handleCommand = async (cmd) => {
   background: var(--bg-light);
   overflow: hidden;
 }
-
-/* 侧边栏 */
 .sidebar {
   width: 220px;
   height: 100vh;
@@ -136,7 +120,6 @@ const handleCommand = async (cmd) => {
   z-index: 10;
 }
 .sidebar.collapsed { width: 64px; }
-
 .sidebar-logo {
   height: 64px;
   display: flex;
@@ -155,7 +138,6 @@ const handleCommand = async (cmd) => {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
-
 .sidebar-menu {
   flex: 1;
   border: none !important;
@@ -175,13 +157,8 @@ const handleCommand = async (cmd) => {
   color: var(--primary) !important;
   font-weight: 500;
 }
-:deep(.el-menu-item:hover) {
-  background: #f5f6fa !important;
-}
-:deep(.el-menu--collapse) {
-  width: 100% !important;
-}
-
+:deep(.el-menu-item:hover) { background: #f5f6fa !important; }
+:deep(.el-menu--collapse) { width: 100% !important; }
 .collapse-btn {
   height: 48px;
   display: flex;
@@ -196,16 +173,12 @@ const handleCommand = async (cmd) => {
   color: var(--primary);
   background: #f5f6fa;
 }
-
-/* 主体 */
 .main-wrapper {
   flex: 1;
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
-
-/* 顶栏 */
 .topbar {
   height: 64px;
   background: white;
@@ -241,8 +214,6 @@ const handleCommand = async (cmd) => {
   cursor: pointer;
   font-weight: 500;
 }
-
-/* 内容 */
 .content {
   flex: 1;
   padding: 24px;
