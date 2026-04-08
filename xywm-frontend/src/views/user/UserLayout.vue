@@ -77,7 +77,6 @@ import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessageBox, ElMessage } from 'element-plus'
 import { useAuthStore } from '@/stores/auth'
-// 删除了 import Home from './Home.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -89,7 +88,7 @@ const menuItems = [
   { path: '/user/home',    icon: 'House',        label: '首页点餐' },
   { path: '/user/orders',  icon: 'List',         label: '我的订单' },
   { path: '/user/cart',    icon: 'ShoppingCart', label: '购物车' },
-  { path: '/user/coupon',  icon: 'Ticket',       label: '我的优惠券' },
+  { path: '/user/address', icon: 'Location',     label: '收货地址' },
   { path: '/user/profile', icon: 'User',         label: '个人信息' },
 ]
 
@@ -115,7 +114,6 @@ const handleCommand = async (cmd) => {
 </script>
 
 <style scoped>
-/* 样式原封不动，完全保留你的设计 */
 .layout {
   display: flex;
   height: 100vh;
@@ -237,7 +235,6 @@ const handleCommand = async (cmd) => {
   padding: 24px;
   overflow-y: auto;
 }
-/* 添加平滑的页面切换过渡 */
 .fade-enter-active, .fade-leave-active { transition: opacity 0.2s ease; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
 </style>

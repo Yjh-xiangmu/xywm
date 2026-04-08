@@ -9,7 +9,9 @@ import com.xywm.backend.vo.DishVO;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -19,6 +21,7 @@ public class DishController {
     @Autowired
     private DishService dishService;
 
+    // 商家端：获取自己的菜品列表（可按分类过滤）
     @GetMapping("/list")
     public Result<List<DishVO>> getCurrentMerchantDishes(@RequestParam(required = false) Long categoryId, HttpServletRequest request) {
         Long merchantId = (Long) request.getAttribute("currentUserId");
@@ -31,9 +34,16 @@ public class DishController {
         return Result.success(list);
     }
 
+    // 用户端：获取指定商家的菜品列表
     @GetMapping("/merchant/{merchantId}")
     public Result<List<DishVO>> getMerchantDishes(@PathVariable Long merchantId) {
         return Result.success(dishService.getMerchantDishes(merchantId));
+    }
+
+    // 用户端：获取指定商家的菜品（按分类分组，用于商家详情页）
+    @GetMapping("/grouped/{merchantId}")
+    public Result<List<Map<String, Object>>> getGroupedDishes(@PathVariable Long merchantId) {
+        return Result.success(dishService.getGroupedDishes(merchantId));
     }
 
     // 商家新增菜品
@@ -46,7 +56,6 @@ public class DishController {
             throw new BusinessException("未能获取到商家身份信息，请重新登录！");
         }
 
-        // 强制把防丢 ID 写回当前线程，防止深层的 DishService 获取不到
         UserContext.setUserId(merchantId);
 
         dto.setId(null);
@@ -54,18 +63,21 @@ public class DishController {
         return Result.success();
     }
 
+    // 商家修改菜品
     @PutMapping
     public Result<Void> updateDish(@RequestBody DishDTO dto) {
         dishService.updateDish(dto);
         return Result.success();
     }
 
+    // 商家修改菜品状态（上架/下架）
     @PutMapping("/{id}/status/{status}")
     public Result<Void> updateStatus(@PathVariable Long id, @PathVariable Integer status) {
         dishService.updateStatus(id, status);
         return Result.success();
     }
 
+    // 商家删除菜品
     @DeleteMapping("/{id}")
     public Result<Void> deleteDish(@PathVariable Long id) {
         dishService.removeById(id);

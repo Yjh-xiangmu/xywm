@@ -1,5 +1,27 @@
 <template>
   <div class="user-home">
+
+    <!-- 公告栏 -->
+    <transition name="fade">
+      <div class="notice-bar" v-if="notices.length > 0">
+        <el-icon class="notice-icon"><Bell /></el-icon>
+        <el-carousel
+            height="22px"
+            direction="vertical"
+            :autoplay="true"
+            :interval="4000"
+            indicator-position="none"
+            arrow="never"
+            class="notice-carousel"
+        >
+          <el-carousel-item v-for="n in notices" :key="n.id">
+            <span class="notice-text" @click="showNotice(n)">{{ n.title }}：{{ n.content }}</span>
+          </el-carousel-item>
+        </el-carousel>
+      </div>
+    </transition>
+
+    <!-- Banner -->
     <div class="banner">
       <div class="banner-content">
         <h1>今天想吃点什么？😋</h1>
@@ -18,6 +40,7 @@
     </div>
 
     <div class="main-container">
+      <!-- 分类过滤 -->
       <div class="category-filter">
         <div
             class="category-item"
@@ -48,7 +71,6 @@
 
       <div v-else class="shop-grid">
         <el-empty v-if="filteredShops.length === 0" description="没有找到相关的商家哦" />
-
         <div
             class="shop-card"
             v-for="shop in filteredShops"
@@ -57,13 +79,12 @@
         >
           <div class="shop-img-wrapper">
             <el-image
-                :src="shop.avatar || shop.licenseUrl || 'https://cube.elemecdn.com/e/fd/0fc7d20532fdaf769a25683617711png.png'"
+                :src="shop.avatar || 'https://cube.elemecdn.com/e/fd/0fc7d20532fdaf769a25683617711png.png'"
                 class="shop-image"
                 fit="cover"
             />
             <div class="status-badge">营业中</div>
           </div>
-
           <div class="shop-info">
             <h3 class="shop-name">{{ shop.nickname }}</h3>
             <div class="shop-meta">
@@ -75,12 +96,20 @@
               <el-tag size="small" effect="plain" color="#f0fff8" style="color: #43e97b; border-color: #43e97b;">
                 {{ getCategoryName(shop.categoryId) }}
               </el-tag>
-              <el-tag size="small" type="danger" effect="plain">满20减2</el-tag>
             </div>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- 公告详情弹窗 -->
+    <el-dialog v-model="noticeDialogVisible" :title="currentNotice?.title" width="480px">
+      <p style="line-height:1.8; color:#303133; white-space:pre-wrap;">{{ currentNotice?.content }}</p>
+      <template #footer>
+        <el-button type="primary" @click="noticeDialogVisible = false">知道了</el-button>
+      </template>
+    </el-dialog>
+
   </div>
 </template>
 
@@ -88,25 +117,30 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Search } from '@element-plus/icons-vue'
-import { ElMessage } from 'element-plus'
 import { getShopListApi, getPlatformCategoryApi } from '@/api/user'
+import request from '@/utils/request'
 
 const router = useRouter()
 const shopList = ref([])
 const categoryList = ref([])
+const notices = ref([])
 const searchKeyword = ref('')
 const currentCategoryId = ref('')
 const loading = ref(false)
+const noticeDialogVisible = ref(false)
+const currentNotice = ref(null)
 
 const initData = async () => {
   loading.value = true
   try {
-    const [shopRes, catRes] = await Promise.all([
+    const [shopRes, catRes, noticeRes] = await Promise.all([
       getShopListApi(),
-      getPlatformCategoryApi()
+      getPlatformCategoryApi(),
+      request.get('/api/notice/active')
     ])
-    shopList.value = shopRes.data || []
-    categoryList.value = catRes.data || []
+    shopList.value    = shopRes.data    || []
+    categoryList.value = catRes.data   || []
+    notices.value     = noticeRes.data || []
   } finally {
     loading.value = false
   }
@@ -118,9 +152,7 @@ const getCategoryName = (id) => {
   return cat ? cat.name : '精选美食'
 }
 
-const filterByCategory = (id) => {
-  currentCategoryId.value = id
-}
+const filterByCategory = (id) => { currentCategoryId.value = id }
 
 const filteredShops = computed(() => {
   let result = shopList.value
@@ -129,27 +161,49 @@ const filteredShops = computed(() => {
   }
   if (searchKeyword.value) {
     const keyword = searchKeyword.value.toLowerCase()
-    result = result.filter(shop =>
-        shop.nickname.toLowerCase().includes(keyword)
-    )
+    result = result.filter(shop => shop.nickname.toLowerCase().includes(keyword))
   }
   return result
 })
 
-const goToShop = (shop) => {
-  ElMessage.success(`准备进入 ${shop.nickname} 点餐啦！`)
+const goToShop = (shop) => { router.push(`/user/shop/${shop.id}`) }
+
+const showNotice = (notice) => {
+  currentNotice.value = notice
+  noticeDialogVisible.value = true
 }
 
-onMounted(() => {
-  initData()
-})
+onMounted(() => initData())
 </script>
 
 <style scoped>
-.user-home {
-  min-height: 100%;
-  padding-bottom: 40px;
+.user-home { min-height: 100%; padding-bottom: 40px; }
+
+/* 公告栏 */
+.notice-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(135deg, #fff9ec, #fff3d0);
+  border: 1px solid #ffe58f;
+  border-radius: 10px;
+  padding: 8px 16px;
+  margin-bottom: 16px;
 }
+.notice-icon { color: #faad14; font-size: 16px; flex-shrink: 0; }
+.notice-carousel { flex: 1; }
+.notice-text {
+  font-size: 13px;
+  color: #8c6d00;
+  cursor: pointer;
+  line-height: 22px;
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.notice-text:hover { color: #faad14; }
+
 .banner {
   height: 240px;
   background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
@@ -160,114 +214,41 @@ onMounted(() => {
   overflow: hidden;
   border-radius: 12px;
 }
-.banner-content {
-  text-align: center;
-  color: white;
-  z-index: 1;
-  width: 100%;
-  max-width: 650px;
-  padding: 0 20px;
-}
+.banner-content { text-align: center; color: white; z-index: 1; width: 100%; max-width: 650px; padding: 0 20px; }
 .banner-content h1 { font-size: 30px; margin-bottom: 10px; font-weight: bold; letter-spacing: 2px; }
 .banner-content p { font-size: 15px; margin-bottom: 25px; opacity: 0.9; }
-.search-box {
-  display: flex;
-  gap: 10px;
-  background: white;
-  padding: 6px;
-  border-radius: 12px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-}
+.search-box { display: flex; gap: 10px; background: white; padding: 6px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
 .search-box :deep(.el-input__wrapper) { box-shadow: none !important; background: transparent; }
 .search-btn { border-radius: 8px; font-weight: bold; padding: 0 25px; color: white; }
 
-.main-container {
-  margin-top: 20px;
-  position: relative;
-  z-index: 2;
-}
-.category-filter {
-  background: white;
-  border-radius: 16px;
-  padding: 20px;
-  display: flex;
-  gap: 30px;
-  overflow-x: auto;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.04);
-  margin-bottom: 30px;
-}
+.main-container { margin-top: 20px; }
+.category-filter { background: white; border-radius: 16px; padding: 20px; display: flex; gap: 30px; overflow-x: auto; box-shadow: 0 4px 16px rgba(0,0,0,0.04); margin-bottom: 30px; }
 .category-filter::-webkit-scrollbar { display: none; }
-.category-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  transition: all 0.3s;
-  min-width: 64px;
-}
+.category-item { display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; transition: all 0.3s; min-width: 64px; }
 .category-item:hover { transform: translateY(-3px); }
-.cat-icon {
-  width: 48px;
-  height: 48px;
-  background: #f5f7fa;
-  border-radius: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  transition: all 0.3s;
-}
+.cat-icon { width: 48px; height: 48px; background: #f5f7fa; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 24px; transition: all 0.3s; }
 .cat-name { font-size: 14px; color: #606266; font-weight: 500; }
-.category-item.active .cat-icon {
-  background: #f0fff8;
-  color: #43e97b;
-  box-shadow: 0 4px 12px rgba(67, 233, 123, 0.2);
-}
+.category-item.active .cat-icon { background: #f0fff8; color: #43e97b; box-shadow: 0 4px 12px rgba(67,233,123,0.2); }
 .category-item.active .cat-name { color: #43e97b; font-weight: bold; }
 
 .section-title { display: flex; align-items: baseline; gap: 15px; margin-bottom: 20px; }
 .section-title h2 { font-size: 20px; color: #303133; margin: 0; font-weight: bold; }
 .subtitle { color: #909399; font-size: 13px; }
 
-.shop-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 20px;
-}
-.shop-card {
-  background: white;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.04);
-  cursor: pointer;
-  transition: all 0.3s ease;
-  border: 1px solid transparent;
-}
-.shop-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 24px rgba(0,0,0,0.08);
-  border-color: #f0fff8;
-}
+.shop-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
+.shop-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.04); cursor: pointer; transition: all 0.3s ease; border: 1px solid transparent; }
+.shop-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0,0,0,0.08); border-color: #f0fff8; }
 .shop-img-wrapper { position: relative; height: 140px; overflow: hidden; }
 .shop-image { width: 100%; height: 100%; transition: transform 0.5s; }
 .shop-card:hover .shop-image { transform: scale(1.05); }
-.status-badge {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: rgba(67, 233, 123, 0.9);
-  color: white;
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: bold;
-  backdrop-filter: blur(4px);
-}
+.status-badge { position: absolute; top: 10px; right: 10px; background: rgba(67,233,123,0.9); color: white; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; }
 .shop-info { padding: 16px; }
 .shop-name { margin: 0 0 8px 0; font-size: 17px; color: #303133; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .shop-meta { display: flex; align-items: center; color: #606266; font-size: 12px; margin-bottom: 12px; }
 .rating { color: #ff9900; font-weight: bold; font-size: 13px; }
 .divider { margin: 0 8px; color: #dcdfe6; }
 .shop-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.fade-enter-active, .fade-leave-active { transition: opacity 0.3s; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
 </style>

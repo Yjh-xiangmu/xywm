@@ -20,12 +20,27 @@ const router = createRouter({
         {
           path: 'dashboard',
           name: 'AdminDashboard',
-          component: () => import('@/views/admin/Dashboard.vue'),
+          component: () => import('@/views/admin/AdminStats.vue'),
         },
         {
           path: 'merchants',
           name: 'MerchantAudit',
           component: () => import('@/views/admin/MerchantAudit.vue'),
+        },
+        {
+          path: 'users',
+          name: 'AdminUsers',
+          component: () => import('@/views/admin/AdminUsers.vue'),
+        },
+        {
+          path: 'category',
+          name: 'AdminCategory',
+          component: () => import('@/views/admin/AdminCategory.vue'),
+        },
+        {
+          path: 'notice',
+          name: 'AdminNotice',
+          component: () => import('@/views/admin/AdminNotice.vue'),
         },
       ]
     },
@@ -40,6 +55,11 @@ const router = createRouter({
           component: () => import('@/views/merchant/Dashboard.vue'),
         },
         {
+          path: 'orders',
+          name: 'MerchantOrders',
+          component: () => import('@/views/merchant/MerchantOrders.vue'),
+        },
+        {
           path: 'category',
           name: 'MerchantCategory',
           component: () => import('@/views/merchant/CategoryManage.vue'),
@@ -48,7 +68,17 @@ const router = createRouter({
           path: 'dishes',
           name: 'MerchantDish',
           component: () => import('@/views/merchant/DishManage.vue'),
-        }
+        },
+        {
+          path: 'shop',
+          name: 'ShopSetting',
+          component: () => import('@/views/merchant/ShopSetting.vue'),
+        },
+        {
+          path: 'coupon',
+          name: 'CouponManage',
+          component: () => import('@/views/merchant/CouponManage.vue'),
+        },
       ]
     },
     {
@@ -57,11 +87,40 @@ const router = createRouter({
       redirect: '/user/home',
       children: [
         {
-          path: 'home', // 对应 /user/home
+          path: 'home',
           name: 'UserHome',
           component: () => import('@/views/user/Home.vue'),
-        }
-        // 以后你写的购物车、订单页面也都加在这里面
+        },
+        {
+          path: 'shop/:merchantId',
+          name: 'ShopDetail',
+          component: () => import('@/views/user/ShopDetail.vue'),
+        },
+        {
+          path: 'cart',
+          name: 'UserCart',
+          component: () => import('@/views/user/Cart.vue'),
+        },
+        {
+          path: 'address',
+          name: 'AddressManage',
+          component: () => import('@/views/user/AddressManage.vue'),
+        },
+        {
+          path: 'checkout',
+          name: 'Checkout',
+          component: () => import('@/views/user/Checkout.vue'),
+        },
+        {
+          path: 'orders',
+          name: 'UserOrders',
+          component: () => import('@/views/user/Orders.vue'),
+        },
+        {
+          path: 'profile',
+          name: 'UserProfile',
+          component: () => import('@/views/user/Profile.vue'),
+        },
       ]
     },
   ]
