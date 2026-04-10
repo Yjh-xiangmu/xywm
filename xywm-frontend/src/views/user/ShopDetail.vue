@@ -1,7 +1,6 @@
 <template>
   <div class="shop-detail" v-loading="pageLoading">
 
-    <!-- 商家头部信息 -->
     <div class="shop-header" v-if="shopInfo">
       <div class="shop-cover">
         <el-image
@@ -28,10 +27,23 @@
       </div>
     </div>
 
-    <!-- 主体：左侧分类 + 右侧菜品 -->
+    <div class="coupon-bar" v-if="shopCoupons.length > 0">
+      <div class="coupon-bar-title">🎫 领券</div>
+      <div class="coupon-items">
+        <div v-for="c in shopCoupons" :key="c.id" class="coupon-chip" :class="c.receiveStatus">
+          <div class="chip-desc">
+            {{ c.type === 1 ? `满${c.minAmount}减${c.discountAmount}` : `满${c.minAmount}享${c.discountRate}折` }}
+          </div>
+          <div class="chip-sub">{{ c.name }}</div>
+          <button class="chip-btn" :disabled="c.receiveStatus !== 'available'" @click.stop="receiveCoupon(c)">
+            {{ receiveLabel(c.receiveStatus) }}
+          </button>
+        </div>
+      </div>
+    </div>
+
     <div class="shop-body">
 
-      <!-- 左侧分类导航 -->
       <aside class="category-sidebar">
         <div
             v-for="group in dishGroups"
@@ -45,7 +57,6 @@
         </div>
       </aside>
 
-      <!-- 右侧菜品列表 -->
       <main class="dish-main" ref="dishMainRef" @scroll="handleScroll">
         <div
             v-for="group in dishGroups"
@@ -93,12 +104,10 @@
           </div>
         </div>
 
-        <!-- 底部空白，防止最后一组无法滚到顶 -->
         <div style="height: 200px;" />
       </main>
     </div>
 
-    <!-- 底部购物车浮动栏 -->
     <transition name="slide-up">
       <div class="cart-bar" v-if="cartTotalCount > 0" @click="goToCart">
         <div class="cart-bar-left">
@@ -124,6 +133,7 @@ import { ref, computed, onMounted, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { getShopDetailApi, getGroupedDishesApi, addToCartApi, updateCartQuantityApi, removeCartItemApi, getCartApi } from '@/api/user'
+import request from '@/utils/request' // 如项目内非该路径，请修正
 
 const route = useRoute()
 const router = useRouter()
@@ -136,6 +146,32 @@ const cartItems = ref([])        // 购物车原始数据 [{id, dishId, quantity
 const activeCategoryId = ref(null)
 const dishMainRef = ref(null)
 const isScrolling = ref(false)   // 防止点击分类时触发 scroll 监听
+
+// ======= 优惠券数据与方法 =======
+const shopCoupons = ref([])
+const loadCoupons = async () => {
+  try {
+    const res = await request.get(`/api/coupon/shop/${merchantId}`)
+    shopCoupons.value = res.data || []
+  } catch (e) {}
+}
+const receiveLabel = (status) => {
+  const map = {
+    available: '领取',
+    holding:   '已持有',
+    used:      '已领过',
+    full:      '已抢完'
+  }
+  return map[status] || '领取'
+}
+const receiveCoupon = async (c) => {
+  try {
+    await request.post(`/api/coupon/receive/${c.id}`)
+    ElMessage.success('领取成功！可在「我的优惠券」中查看')
+    c.receiveStatus = 'holding'
+    c.received++
+  } catch (e) {}
+}
 
 // ======= 初始化 =======
 onMounted(async () => {
@@ -158,6 +194,7 @@ onMounted(async () => {
   } finally {
     pageLoading.value = false
   }
+  loadCoupons()  // 单独加载优惠券，不影响主流程
 })
 
 // ======= 购物车计算 =======
@@ -593,4 +630,70 @@ const goToCart = () => {
 .count-fade-enter-from, .count-fade-leave-to { opacity: 0; transform: scale(0.8); }
 .slide-up-enter-active, .slide-up-leave-active { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
 .slide-up-enter-from, .slide-up-leave-to { opacity: 0; transform: translateX(-50%) translateY(20px); }
+
+/* ===== 优惠券领取区 ===== */
+.coupon-bar {
+  background: #fff9ec;
+  border-bottom: 1px solid #ffe58f;
+  padding: 12px 16px;
+  flex-shrink: 0;
+}
+.coupon-bar-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #8c6d00;
+  margin-bottom: 10px;
+}
+.coupon-items {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+.coupon-items::-webkit-scrollbar { display: none; }
+.coupon-chip {
+  flex-shrink: 0;
+  background: white;
+  border: 1.5px solid #ffd591;
+  border-radius: 10px;
+  padding: 8px 12px;
+  min-width: 130px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.coupon-chip.holding { border-color: #b7eb8f; background: #f6ffed; }
+.coupon-chip.used,
+.coupon-chip.full  { border-color: #d9d9d9; background: #fafafa; opacity: 0.7; }
+.chip-desc {
+  font-size: 14px;
+  font-weight: 700;
+  color: #f5576c;
+}
+.coupon-chip.holding .chip-desc { color: #52c41a; }
+.coupon-chip.used .chip-desc,
+.coupon-chip.full .chip-desc   { color: #bfbfbf; }
+.chip-sub {
+  font-size: 11px;
+  color: #8c6d00;
+}
+.chip-btn {
+  margin-top: 4px;
+  padding: 3px 10px;
+  border-radius: 12px;
+  border: none;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  background: linear-gradient(135deg, #f5576c, #f093fb);
+  color: white;
+  transition: all 0.2s;
+  align-self: flex-start;
+}
+.chip-btn:disabled {
+  background: #e8e8e8;
+  color: #bfbfbf;
+  cursor: not-allowed;
+}
+.chip-btn:not(:disabled):hover { transform: scale(1.05); }
 </style>

@@ -88,6 +88,7 @@ const menuItems = [
   { path: '/user/home',    icon: 'House',        label: '首页点餐' },
   { path: '/user/orders',  icon: 'List',         label: '我的订单' },
   { path: '/user/cart',    icon: 'ShoppingCart', label: '购物车' },
+  { path: '/user/coupon',  icon: 'Ticket',       label: '我的优惠券' },
   { path: '/user/address', icon: 'Location',     label: '收货地址' },
   { path: '/user/profile', icon: 'User',         label: '个人信息' },
 ]

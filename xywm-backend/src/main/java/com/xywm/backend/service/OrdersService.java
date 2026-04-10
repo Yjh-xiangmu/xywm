@@ -10,5 +10,6 @@ public interface OrdersService extends IService<Orders> {
     String createOrder(Long userId, OrderDTO dto);
     List<OrderVO> getUserOrders(Long userId);
     List<OrderVO> getMerchantOrders(Long merchantId);
+    List<OrderVO> getAllOrders();
     void updateOrderStatus(Long orderId, Integer status);
 }

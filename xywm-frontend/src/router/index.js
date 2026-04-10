@@ -38,6 +38,11 @@ const router = createRouter({
           component: () => import('@/views/admin/AdminCategory.vue'),
         },
         {
+          path: 'orders',
+          name: 'AdminOrdes',
+          component: () => import('@/views/admin/AdminOrders.vue'),
+        },
+        {
           path: 'notice',
           name: 'AdminNotice',
           component: () => import('@/views/admin/AdminNotice.vue'),
@@ -120,6 +125,11 @@ const router = createRouter({
           path: 'profile',
           name: 'UserProfile',
           component: () => import('@/views/user/Profile.vue'),
+        },
+        {
+          path: 'coupon',
+          name: 'MyCoupons',
+          component: () => import('@/views/user/MyCoupons.vue'),
         },
       ]
     },

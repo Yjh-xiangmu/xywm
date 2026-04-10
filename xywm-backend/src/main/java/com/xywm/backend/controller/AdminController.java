@@ -149,4 +149,9 @@ public class AdminController {
 
         return Result.success(result);
     }
+
+    @GetMapping("/order/list")
+    public Result<?> getAllOrders() {
+        return Result.success(ordersService.getAllOrders());
+    }
 }
